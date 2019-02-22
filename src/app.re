@@ -1,21 +1,28 @@
 [%bs.raw {|require('./app.css')|}];
 
-[@bs.module] external logo : string = "./logo.svg";
+[@bs.module] external logo: string = "./logo.svg";
 
-let component = ReasonReact.statelessComponent("App");
+type state = {userInputValue: Input.inputValue};
 
-let make = (~message, _children) => {
+type action =
+  | UpdateValue(Input.inputValue);
+
+let component = ReasonReact.reducerComponent("App");
+
+let make = _children => {
   ...component,
-  render: _self =>
+
+  initialState: () => {userInputValue: "0"},
+
+  reducer: (action, _state) =>
+    switch (action) {
+    | UpdateValue(value) => ReasonReact.Update({userInputValue: value})
+    },
+
+  render: self =>
     <div className="App">
-      <div className="App-header">
-        <img src=logo className="App-logo" alt="logo" />
-        <h2> (ReasonReact.string(message)) </h2>
-      </div>
-      <p className="App-intro">
-        (ReasonReact.string("To get started, edit"))
-        <code> (ReasonReact.string(" src/app.re ")) </code>
-        (ReasonReact.string("and save to reload."))
-      </p>
+      <h3> {ReasonReact.string(self.state.userInputValue)} </h3>
+      <p> {ReasonReact.string("Enter a sum")} </p>
+      <Input onSubmit={value => self.send(UpdateValue(value))} />
     </div>,
 };
