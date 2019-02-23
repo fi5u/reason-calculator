@@ -2,7 +2,7 @@
 
 [@bs.module] external logo: string = "./logo.svg";
 
-type sumItem = {value: string};
+type sumItem = {v: string};
 
 type state = {
   userInputValue: Input.inputValue,
@@ -19,13 +19,20 @@ let make = _children => {
 
   initialState: () => {
     userInputValue: "0",
-    values: Some([{value: "123456"}, {value: "654321"}]),
+    values: Some([{v: "123456"}, {v: "654321"}]),
   },
 
   reducer: (action, state) =>
     switch (action) {
     | UpdateValue(value) =>
-      ReasonReact.Update({...state, userInputValue: value})
+      ReasonReact.Update({
+        userInputValue: value,
+        values:
+          switch (state.values) {
+          | None => state.values
+          | Some(values) => Some([{v: value}, ...values])
+          },
+      })
     },
 
   render: self =>
@@ -37,7 +44,7 @@ let make = _children => {
          | Some(values) =>
            ReasonReact.array(
              Array.of_list(
-               List.map(item => <PrevValue value={item.value} />, values),
+               List.map(item => <PrevValue key={item.v} value={item.v} />, values),
              ),
            )
          }}
