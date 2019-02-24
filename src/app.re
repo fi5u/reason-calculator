@@ -18,7 +18,7 @@ let component = ReasonReact.reducerComponent("App");
 let make = _children => {
   ...component,
 
-  initialState: () => {userInputValue: "0", values: Some([])},
+  initialState: () => {userInputValue: "0", values: None},
 
   reducer: (action, state) =>
     switch (action) {
@@ -27,7 +27,7 @@ let make = _children => {
         userInputValue: value,
         values:
           switch (state.values) {
-          | None => state.values
+          | None => Some([{v: value}])
           | Some(values) => Some([{v: value}, ...values])
           },
       })
@@ -41,7 +41,7 @@ let make = _children => {
          | None => ReasonReact.string("Nothing yet...")
          | Some(values) =>
            switch (values) {
-           | [] => ReasonReact.string("Zilch...")
+           | [] => ReasonReact.string("Empty list...")
            | _ =>
              ReasonReact.array(
                Array.of_list(
