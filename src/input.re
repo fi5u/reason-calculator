@@ -12,10 +12,26 @@ let isMathChar = char =>
 
 let isNumber = char => int_of_char(char) >= 48 && int_of_char(char) <= 57;
 
-let charControl = (send, string) => {
+let charControl = (send, onSubmit, string) => {
   let lastChar = string.[String.length(string) - 1];
-  if (isNumber(lastChar)) {
-    send(string);
+
+  switch (lastChar) {
+  | '0'
+  | '1'
+  | '2'
+  | '3'
+  | '4'
+  | '5'
+  | '6'
+  | '7'
+  | '8'
+  | '9' => send(string)
+  | '+'
+  | '-' =>
+    onSubmit(String.sub(string, 0, String.length(string) - 1));
+    send("");
+    send(String.make(1, lastChar));
+  | _ => ()
   };
 };
 
@@ -35,7 +51,7 @@ let make = (~onSubmit, _) => {
       placeholder="Write something to do"
       onChange={evt => {
         let inputValue = ReactEvent.Form.target(evt)##value;
-        charControl(send, inputValue);
+        charControl(send, onSubmit, inputValue);
       }}
       onKeyDown={evt =>
         if (ReactEvent.Keyboard.key(evt) == "Enter") {
