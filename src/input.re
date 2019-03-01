@@ -1,6 +1,11 @@
 type inputValue = string;
 type state = inputValue;
 
+type lastCharacter =
+  | Empty
+  | Digit
+  | Math(char);
+
 let valueFromEvent = (evt): string => (evt |> ReactEvent.Form.target)##value;
 
 let isMathChar = char =>
@@ -13,25 +18,27 @@ let isMathChar = char =>
 let isNumber = char => int_of_char(char) >= 48 && int_of_char(char) <= 57;
 
 let charControl = (send, onSubmit, string) => {
-  let lastChar = string.[String.length(string) - 1];
+  let lastChar =
+    if (String.length(string) === 0) {
+      Empty;
+    } else {
+      let last = string.[String.length(string) - 1];
+      if (isNumber(last)) {
+        Digit;
+      } else if (isMathChar(last)) {
+        Math(last);
+      } else {
+        Empty;
+      };
+    };
 
   switch (lastChar) {
-  | '0'
-  | '1'
-  | '2'
-  | '3'
-  | '4'
-  | '5'
-  | '6'
-  | '7'
-  | '8'
-  | '9' => send(string)
-  | '+'
-  | '-' =>
+  | Empty => send("")
+  | Digit => send(string)
+  | Math(last) =>
+    send(string);
     onSubmit(String.sub(string, 0, String.length(string) - 1));
-    send("");
-    send(String.make(1, lastChar));
-  | _ => ()
+    send(String.make(1, last));
   };
 };
 
