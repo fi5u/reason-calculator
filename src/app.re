@@ -32,6 +32,7 @@ let make = _children => {
           | None => 0
           | Some(values) =>
             ListLabels.fold_left(~f=getTotal, ~init=0, values)
+            + int_of_string(value)
           },
         values:
           switch (state.values) {
@@ -66,7 +67,8 @@ let make = _children => {
       <div>
         {switch (self.state.total) {
          | 0 => ReasonReact.null
-         | _ => ReasonReact.string(string_of_int(self.state.total))
+         | _ =>
+           ReasonReact.string("Total:" ++ string_of_int(self.state.total))
          }}
       </div>
       <p> {ReasonReact.string("Enter a sum")} </p>
