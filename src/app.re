@@ -3,7 +3,10 @@
 [@bs.module] external logo: string = "./logo.svg";
 
 type total = int;
-type sumItem = {v: string};
+type sumItem = {
+  m: option(char),
+  v: string,
+};
 type userValues = list(sumItem);
 
 type state = {
@@ -36,34 +39,50 @@ let make = _children => {
           },
         values:
           switch (state.values) {
-          | None => Some([{v: value}])
-          | Some(values) => Some([{v: value}, ...values])
+          | None => Some([{m: None, v: value}])
+          | Some(values) =>
+            Some([
+              {
+                m: Some(value.[0]),
+                v: String.sub(value, 1, String.length(value) - 1),
+              },
+              ...values,
+            ])
           },
       })
     },
 
   render: self => {
     <div className="App">
-      <div>
-        {switch (self.state.values) {
-         | None => ReasonReact.string("Nothing yet...")
-         | Some(values) =>
-           switch (values) {
-           | [] => ReasonReact.string("Empty list...")
-           | _ =>
-             ReasonReact.array(
-               Array.of_list(
-                 List.rev(
-                   List.map(
-                     item => <PrevValue key={item.v} value={item.v} />,
-                     values,
+      <table>
+        <tbody>
+          {switch (self.state.values) {
+           | None =>
+             <tr> <td> {ReasonReact.string("Nothing yet...")} </td> </tr>
+           | Some(values) =>
+             switch (values) {
+             | [] =>
+               <tr> <td> {ReasonReact.string("Empty list...")} </td> </tr>
+             | _ =>
+               ReasonReact.array(
+                 Array.of_list(
+                   List.rev(
+                     List.map(
+                       item =>
+                         <PrevValue
+                           key={item.v}
+                           math={item.m}
+                           value={item.v}
+                         />,
+                       values,
+                     ),
                    ),
                  ),
-               ),
-             )
-           }
-         }}
-      </div>
+               )
+             }
+           }}
+        </tbody>
+      </table>
       <div>
         {switch (self.state.total) {
          | 0 => ReasonReact.null
