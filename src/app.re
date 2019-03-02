@@ -2,25 +2,37 @@
 
 [@bs.module] external logo: string = "./logo.svg";
 
+type total = int;
 type sumItem = {v: string};
 type userValues = list(sumItem);
 
-type state = {values: option(userValues)};
+type state = {
+  total,
+  values: option(userValues),
+};
 
 type action =
   | UpdateValue(Input.inputValue);
+
+let getTotal = (r, elem) => r + int_of_string(elem.v);
 
 let component = ReasonReact.reducerComponent("App");
 
 let make = _children => {
   ...component,
 
-  initialState: () => {values: None},
+  initialState: () => {total: 0, values: None},
 
   reducer: (action, state) =>
     switch (action) {
     | UpdateValue(value) =>
       ReasonReact.Update({
+        total:
+          switch (state.values) {
+          | None => 0
+          | Some(values) =>
+            ListLabels.fold_left(~f=getTotal, ~init=0, values)
+          },
         values:
           switch (state.values) {
           | None => Some([{v: value}])
@@ -49,6 +61,12 @@ let make = _children => {
                ),
              )
            }
+         }}
+      </div>
+      <div>
+        {switch (self.state.total) {
+         | 0 => ReasonReact.null
+         | _ => ReasonReact.string(string_of_int(self.state.total))
          }}
       </div>
       <p> {ReasonReact.string("Enter a sum")} </p>
