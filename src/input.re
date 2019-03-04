@@ -1,4 +1,5 @@
 type inputValue = string;
+type inputMath = char;
 type state = inputValue;
 
 type lastCharacter =
@@ -11,7 +12,8 @@ let valueFromEvent = (evt): string => (evt |> ReactEvent.Form.target)##value;
 let isMathChar = char =>
   switch (char) {
   | '+'
-  | '-' => true
+  | '-'
+  | '*' => true
   | _ => false
   };
 
@@ -34,10 +36,15 @@ let charControl = (send, onSubmit, string) => {
 
   switch (lastChar) {
   | Empty => send("")
-  | Digit => send(string)
+  | Digit =>
+    // Update input element with string
+    send(string)
   | Math(last) =>
+    // Update input element with string
     send(string);
+    // Send the whole string back
     onSubmit(String.sub(string, 0, String.length(string) - 1));
+    // Convert last char to string and update input element
     send(String.make(1, last));
   };
 };
@@ -55,7 +62,7 @@ let make = (~onSubmit, _) => {
     <input
       value=text
       type_="text"
-      placeholder="Write something to do"
+      placeholder="Type a calculation"
       onChange={evt => {
         let inputValue = ReactEvent.Form.target(evt)##value;
         charControl(send, onSubmit, inputValue);

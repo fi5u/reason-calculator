@@ -17,7 +17,39 @@ type state = {
 type action =
   | UpdateValue(Input.inputValue);
 
-let getTotal = (r, elem) => r + int_of_string(elem.v);
+/**
+ * Calculate two values with a math symbol
+ */
+let calculateValues = (v1, v2, math) =>
+  switch (math) {
+  | '+' => v1 + v2
+  | '-' => v1 - v2
+  | '*' => v1 * v2
+  | _ => 0
+  };
+
+/**
+ * Get the total of `r` and value of current element
+ */
+let getTotal = (r, elem) =>
+  switch (elem.m) {
+  | None => r + int_of_string(elem.v)
+  | Some(math) => calculateValues(r, int_of_string(elem.v), math)
+  };
+
+/**
+ * Process the input value to extract possible math symbol
+ * and value
+ */
+let processInput = input =>
+  if (Input.isMathChar(input.[0])) {
+    {
+      m: Some(input.[0]),
+      v: String.sub(input, 1, String.length(input) - 1),
+    };
+  } else {
+    {m: None, v: input};
+  };
 
 let component = ReasonReact.reducerComponent("App");
 
@@ -34,8 +66,11 @@ let make = _children => {
           switch (state.values) {
           | None => 0
           | Some(values) =>
-            ListLabels.fold_left(~f=getTotal, ~init=0, values)
-            + int_of_string(value)
+            calculateValues(
+              ListLabels.fold_left(~f=getTotal, ~init=0, values),
+              int_of_string(String.sub(value, 1, String.length(value) - 1)),
+              value.[0],
+            )
           },
         values:
           switch (state.values) {
@@ -90,7 +125,6 @@ let make = _children => {
            ReasonReact.string("Total:" ++ string_of_int(self.state.total))
          }}
       </div>
-      <p> {ReasonReact.string("Enter a sum")} </p>
       <Input onSubmit={value => self.send(UpdateValue(value))} />
     </div>;
   },
