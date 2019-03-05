@@ -1,5 +1,4 @@
 type inputValue = string;
-type inputMath = char;
 type state = inputValue;
 
 type lastCharacter =
@@ -7,8 +6,15 @@ type lastCharacter =
   | Digit
   | Math(char);
 
-let valueFromEvent = (evt): string => (evt |> ReactEvent.Form.target)##value;
+/**
+ * Get string value from input event
+ */
+let getValueFromEvent = (evt): string =>
+  (evt |> ReactEvent.Form.target)##value;
 
+/**
+ * Is the passed char a math char
+ */
 let isMathChar = char =>
   switch (char) {
   | '+'
@@ -17,8 +23,14 @@ let isMathChar = char =>
   | _ => false
   };
 
+/**
+ * Is the passed char a number
+ */
 let isNumber = char => int_of_char(char) >= 48 && int_of_char(char) <= 57;
 
+/**
+ * Handle text input changes
+ */
 let charControl = (send, onSubmit, string) => {
   let lastChar =
     if (String.length(string) === 0) {
@@ -63,10 +75,7 @@ let make = (~onSubmit, _) => {
       value=text
       type_="text"
       placeholder="Type a calculation"
-      onChange={evt => {
-        let inputValue = ReactEvent.Form.target(evt)##value;
-        charControl(send, onSubmit, inputValue);
-      }}
+      onChange={evt => charControl(send, onSubmit, getValueFromEvent(evt))}
       onKeyDown={evt =>
         if (ReactEvent.Keyboard.key(evt) == "Enter") {
           onSubmit(text);
