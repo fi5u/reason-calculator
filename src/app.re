@@ -125,7 +125,15 @@ let make = _children => {
            ReasonReact.string("Total:" ++ string_of_int(self.state.total))
          }}
       </div>
-      <Input onSubmit={value => self.send(UpdateValue(value))} />
+      <Input
+        onSubmit={value => self.send(UpdateValue(value))}
+        valuesLength={
+          switch (self.state.values) {
+          | None => 0
+          | Some(values) => List.length(values)
+          }
+        }
+      />
     </div>;
   },
 };

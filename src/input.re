@@ -31,7 +31,7 @@ let isNumber = char => int_of_char(char) >= 48 && int_of_char(char) <= 57;
 /**
  * Handle text input changes
  */
-let charControl = (send, onSubmit, string) => {
+let charControl = (send, onSubmit, string, valuesLength) => {
   let lastChar =
     if (String.length(string) === 0) {
       Empty;
@@ -47,10 +47,15 @@ let charControl = (send, onSubmit, string) => {
     };
 
   switch (lastChar) {
-  | Empty => send("")
+  | Empty => ()
   | Digit =>
     // Update input element with string
     send(string)
+  | Math(last)
+      // Do not allow math char through when is first char of first row
+      when
+        String.length(string) == 1 && valuesLength == 0 && isMathChar(last) =>
+    ()
   | Math(last) =>
     // Update input element with string
     send(string);
@@ -63,7 +68,7 @@ let charControl = (send, onSubmit, string) => {
 
 let component = ReasonReact.reducerComponent("Input");
 
-let make = (~onSubmit, _) => {
+let make = (~onSubmit, ~valuesLength, _) => {
   ...component,
 
   initialState: () => "",
@@ -75,7 +80,9 @@ let make = (~onSubmit, _) => {
       value=text
       type_="text"
       placeholder="Type a calculation"
-      onChange={evt => charControl(send, onSubmit, getValueFromEvent(evt))}
+      onChange={evt =>
+        charControl(send, onSubmit, getValueFromEvent(evt), valuesLength)
+      }
       onKeyDown={evt =>
         if (ReactEvent.Keyboard.key(evt) == "Enter") {
           onSubmit(text);
