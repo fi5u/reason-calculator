@@ -102,10 +102,13 @@ let make = _children => {
                ReasonReact.array(
                  Array.of_list(
                    List.rev(
-                     List.map(
-                       item =>
+                     List.mapi(
+                       (i, item) =>
                          <PrevValue
-                           key={item.v}
+                           key={
+                             // Ensure two keys do not have same value
+                             string_of_int(i) ++ "-" ++ item.v
+                           }
                            math={item.m}
                            value={item.v}
                          />,
