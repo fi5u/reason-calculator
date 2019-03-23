@@ -2,19 +2,24 @@
 
 [@bs.module] external logo: string = "./logo.svg";
 
-type total = int;
 type sumItem = {
   m: option(char),
   v: string,
 };
 type userValues = list(sumItem);
 
+type lastCharacter =
+  | Empty
+  | Digit
+  | Math(char);
+
 type state = {
-  total,
+  inputValue: string,
   values: option(userValues),
 };
 
 type action =
+  | UpdateInput(string)
   | UpdateValue(Input.inputValue);
 
 /**
@@ -38,11 +43,44 @@ let getTotal = (r, elem) =>
   };
 
 /**
+ * Is the passed char a math char
+ */
+let isMathChar = char =>
+  switch (char) {
+  | '+'
+  | '-'
+  | '*' => true
+  | _ => false
+  };
+
+/**
+ * Is the passed char a number
+ */
+let isNumber = char => int_of_char(char) >= 48 && int_of_char(char) <= 57;
+
+/**
+ * Get the type of last char in string
+ */
+let getLastCharType = (string): lastCharacter =>
+  if (String.length(string) === 0) {
+    Empty;
+  } else {
+    let last = string.[String.length(string) - 1];
+    if (isNumber(last)) {
+      Digit;
+    } else if (isMathChar(last)) {
+      Math(last);
+    } else {
+      Empty;
+    };
+  };
+
+/**
  * Process the input value to extract possible math symbol
  * and value
  */
 let processInput = input =>
-  if (Input.isMathChar(input.[0])) {
+  if (isMathChar(input.[0])) {
     {
       m: Some(input.[0]),
       v: String.sub(input, 1, String.length(input) - 1),
@@ -56,22 +94,64 @@ let component = ReasonReact.reducerComponent("App");
 let make = _children => {
   ...component,
 
-  initialState: () => {total: 0, values: None},
+  initialState: () => {inputValue: "", values: None},
 
   reducer: (action, state) =>
     switch (action) {
+    // INPUT VALUE UPDATES:
+    | UpdateInput(inputString) =>
+      let lastCharType = getLastCharType(inputString);
+
+      ReasonReact.Update({
+        //...state,
+        inputValue:
+          switch (lastCharType) {
+          | Empty => ""
+          | Digit => inputString
+          | Math(mathChar) => String.make(1, mathChar)
+          },
+        values:
+          switch (lastCharType) {
+          | Empty => state.values
+          | Digit => state.values
+          | Math(mathChar) =>
+            switch (state.values) {
+            | None =>
+              Some([
+                {
+                  m: None,
+                  v:
+                    // Strip the last math char
+                    String.sub(
+                      inputString,
+                      0,
+                      String.length(inputString) - 1,
+                    ),
+                },
+              ])
+            | Some(values) =>
+              Some([
+                {
+                  m: Some(mathChar),
+                  v:
+                    // Strip the first + last math chars
+                    String.sub(
+                      inputString,
+                      1,
+                      String.length(inputString) - 2,
+                    ),
+                },
+                ...values,
+              ])
+            }
+          },
+      });
+
+    // ENTER PRESSED
     | UpdateValue(value) =>
       ReasonReact.Update({
-        total:
-          switch (state.values) {
-          | None => 0
-          | Some(values) =>
-            calculateValues(
-              ListLabels.fold_left(~f=getTotal, ~init=0, values),
-              int_of_string(String.sub(value, 1, String.length(value) - 1)),
-              value.[0],
-            )
-          },
+        ...state,
+        inputValue: "",
         values:
           switch (state.values) {
           | None => Some([{m: None, v: value}])
@@ -122,20 +202,21 @@ let make = _children => {
         </tbody>
       </table>
       <div>
-        {switch (self.state.total) {
-         | 0 => ReasonReact.null
-         | _ =>
-           ReasonReact.string("Total:" ++ string_of_int(self.state.total))
+        {switch (self.state.values) {
+         | None => ReasonReact.string("Total: 0")
+         | Some(vals) =>
+           ReasonReact.string(
+             "Total:"
+             ++ string_of_int(
+                  ListLabels.fold_left(~f=getTotal, ~init=0, vals),
+                ),
+           )
          }}
       </div>
       <Input
+        onChange={value => self.send(UpdateInput(value))}
         onSubmit={value => self.send(UpdateValue(value))}
-        valuesLength={
-          switch (self.state.values) {
-          | None => 0
-          | Some(values) => List.length(values)
-          }
-        }
+        value={self.state.inputValue}
       />
     </div>;
   },
