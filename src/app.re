@@ -115,34 +115,40 @@ let make = _children => {
           | Empty => state.values
           | Digit => state.values
           | Math(mathChar) =>
-            switch (state.values) {
-            | None =>
-              Some([
-                {
-                  m: None,
-                  v:
-                    // Strip the last math char
-                    String.sub(
-                      inputString,
-                      0,
-                      String.length(inputString) - 1,
-                    ),
-                },
-              ])
-            | Some(values) =>
-              Some([
-                {
-                  m: Some(mathChar),
-                  v:
-                    // Strip the first + last math chars
-                    String.sub(
-                      inputString,
-                      1,
-                      String.length(inputString) - 2,
-                    ),
-                },
-                ...values,
-              ])
+            // Test for string length, if only one, and is math char,
+            // then don't save yet (allows for minus numbers)
+            switch (String.length(inputString)) {
+            | 1 => state.values
+            | _ =>
+              switch (state.values) {
+              | None =>
+                Some([
+                  {
+                    m: None,
+                    v:
+                      // Strip the last math char
+                      String.sub(
+                        inputString,
+                        0,
+                        String.length(inputString) - 1,
+                      ),
+                  },
+                ])
+              | Some(values) =>
+                Some([
+                  {
+                    m: Some(mathChar),
+                    v:
+                      // Strip the first + last math chars
+                      String.sub(
+                        inputString,
+                        1,
+                        String.length(inputString) - 2,
+                      ),
+                  },
+                  ...values,
+                ])
+              }
             }
           },
       });
@@ -150,7 +156,7 @@ let make = _children => {
     // ENTER PRESSED
     | UpdateValue(value) =>
       ReasonReact.Update({
-        ...state,
+        //...state,
         inputValue: "",
         values:
           switch (state.values) {
