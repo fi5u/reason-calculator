@@ -25,13 +25,14 @@ type action =
 /**
  * Calculate two values with a math symbol
  */
-let calculateValues = (v1, v2, math) =>
+let calculateValues = (v1, v2, math) => {
   switch (math) {
   | '+' => v1 + v2
   | '-' => v1 - v2
   | '*' => v1 * v2
   | _ => 0
   };
+};
 
 /**
  * Get the total of `r` and value of current element
@@ -212,9 +213,9 @@ let make = _children => {
          | None => ReasonReact.string("Total: 0")
          | Some(vals) =>
            ReasonReact.string(
-             "Total:"
+             "Total: "
              ++ string_of_int(
-                  ListLabels.fold_left(~f=getTotal, ~init=0, vals),
+                  ListLabels.fold_left(~f=getTotal, ~init=0, List.rev(vals)),
                 ),
            )
          }}
