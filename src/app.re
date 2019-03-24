@@ -25,12 +25,13 @@ type action =
 /**
  * Calculate two values with a math symbol
  */
-let calculateValues = (v1, v2, math) => {
+let calculateValues = (v1, v2, math): float => {
   switch (math) {
-  | '+' => v1 + v2
-  | '-' => v1 - v2
-  | '*' => v1 * v2
-  | _ => 0
+  | '+' => v1 +. v2
+  | '-' => v1 -. v2
+  | '*' => v1 *. v2
+  | '/' => v1 /. v2
+  | _ => 0.0
   };
 };
 
@@ -39,8 +40,8 @@ let calculateValues = (v1, v2, math) => {
  */
 let getTotal = (r, elem) =>
   switch (elem.m) {
-  | None => r + int_of_string(elem.v)
-  | Some(math) => calculateValues(r, int_of_string(elem.v), math)
+  | None => r +. float_of_string(elem.v)
+  | Some(math) => calculateValues(r, float_of_string(elem.v), math)
   };
 
 /**
@@ -50,7 +51,8 @@ let isMathChar = char =>
   switch (char) {
   | '+'
   | '-'
-  | '*' => true
+  | '*'
+  | '/' => true
   | _ => false
   };
 
@@ -115,7 +117,7 @@ let make = _children => {
           switch (lastCharType) {
           | Empty => state.values
           | Digit => state.values
-          | Math(mathChar) =>
+          | Math(_) =>
             // Test for string length, if only one, and is math char,
             // then don't save yet (allows for minus numbers)
             switch (String.length(inputString)) {
@@ -138,7 +140,7 @@ let make = _children => {
               | Some(values) =>
                 Some([
                   {
-                    m: Some(mathChar),
+                    m: Some(inputString.[0]),
                     v:
                       // Strip the first + last math chars
                       String.sub(
@@ -214,8 +216,12 @@ let make = _children => {
          | Some(vals) =>
            ReasonReact.string(
              "Total: "
-             ++ string_of_int(
-                  ListLabels.fold_left(~f=getTotal, ~init=0, List.rev(vals)),
+             ++ string_of_float(
+                  ListLabels.fold_left(
+                    ~f=getTotal,
+                    ~init=0.0,
+                    List.rev(vals),
+                  ),
                 ),
            )
          }}
