@@ -36,13 +36,19 @@ let calculateValues = (v1, v2, math): float => {
 };
 
 /**
- * Get the total of `r` and value of current element
+ * Iterator to get the total of `r` and value of current element
  */
-let getTotal = (r, elem) =>
+let getTotalIterator = (r, elem) =>
   switch (elem.m) {
   | None => r +. float_of_string(elem.v)
   | Some(math) => calculateValues(r, float_of_string(elem.v), math)
   };
+
+/**
+ * Iterate over values to calculate total
+ */
+let getTotal = values =>
+  ListLabels.fold_left(~f=getTotalIterator, ~init=0.0, List.rev(values));
 
 /**
  * Is the passed char a math char
@@ -214,16 +220,18 @@ let make = _children => {
         {switch (self.state.values) {
          | None => ReasonReact.string("Total: 0")
          | Some(vals) =>
-           ReasonReact.string(
-             "Total: "
-             ++ string_of_float(
-                  ListLabels.fold_left(
-                    ~f=getTotal,
-                    ~init=0.0,
-                    List.rev(vals),
-                  ),
-                ),
-           )
+           let total = getTotal(vals);
+           let totalString = string_of_float(total);
+           let lastChar = string_of_float(total).[String.length(totalString)
+                                                   - 1];
+           // Only show decimal point if number has a remainder
+           switch (lastChar) {
+           | '.' =>
+             ReasonReact.string(
+               "Total: " ++ string_of_int(int_of_float(total)),
+             )
+           | _ => ReasonReact.string("Total: " ++ string_of_float(total))
+           };
          }}
       </div>
       <Input
