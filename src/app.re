@@ -13,12 +13,16 @@ type lastCharacter =
   | Digit
   | Math(char);
 
+type activeIndex = int;
+
 type state = {
+  activeIndex: option(activeIndex),
   inputValue: string,
   values: option(userValues),
 };
 
 type action =
+  | ActivateValue(int)
   | UpdateInput(string)
   | UpdateValue(Input.inputValue);
 
@@ -103,16 +107,26 @@ let component = ReasonReact.reducerComponent("App");
 let make = _children => {
   ...component,
 
-  initialState: () => {inputValue: "", values: None},
+  initialState: () => {activeIndex: None, inputValue: "", values: None},
 
   reducer: (action, state) =>
     switch (action) {
+    // SELECT A VALUE TO EDIT
+    | ActivateValue(index) =>
+      ReasonReact.Update({
+        ...state,
+        activeIndex:
+          switch (index) {
+          | activeIndex => Some(activeIndex)
+          },
+      })
+
     // INPUT VALUE UPDATES:
     | UpdateInput(inputString) =>
       let lastCharType = getLastCharType(inputString);
 
       ReasonReact.Update({
-        //...state,
+        ...state,
         inputValue:
           switch (lastCharType) {
           | Empty => ""
@@ -165,7 +179,7 @@ let make = _children => {
     // ENTER PRESSED
     | UpdateValue(value) =>
       ReasonReact.Update({
-        //...state,
+        ...state,
         inputValue: "",
         values:
           switch (state.values) {
@@ -205,6 +219,7 @@ let make = _children => {
                              string_of_int(i) ++ "-" ++ item.v
                            }
                            math={item.m}
+                           onClick={_ => self.send(ActivateValue(i))}
                            value={item.v}
                          />,
                        values,
@@ -239,6 +254,15 @@ let make = _children => {
         onSubmit={value => self.send(UpdateValue(value))}
         value={self.state.inputValue}
       />
+      <div>
+        {switch (self.state.activeIndex) {
+         | None => ReasonReact.string("")
+         | Some(activeIndexValue) =>
+           ReasonReact.string(
+             "Selected: " ++ string_of_int(activeIndexValue),
+           )
+         }}
+      </div>
     </div>;
   },
 };

@@ -1,10 +1,10 @@
 let component = ReasonReact.statelessComponent("PrevValue");
 
-let make = (~math, ~value, _) => {
+let make = (~math, ~onClick, ~value, _) => {
   ...component,
 
   render: _self =>
-    <tr className="PrevValue">
+    <tr className="PrevValue" onClick>
       <td className="PrevValue-math">
         {switch (math) {
          | None => ReasonReact.null
