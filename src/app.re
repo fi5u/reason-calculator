@@ -119,6 +119,11 @@ let make = _children => {
           switch (index) {
           | activeIndex => Some(activeIndex)
           },
+        inputValue:
+          switch (state.values) {
+          | None => ""
+          | Some(values) => List.nth(values, index).v
+          },
       })
 
     // INPUT VALUE UPDATES:
