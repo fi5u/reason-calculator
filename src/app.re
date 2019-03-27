@@ -122,7 +122,13 @@ let make = _children => {
         inputValue:
           switch (state.values) {
           | None => ""
-          | Some(values) => List.nth(values, index).v
+          | Some(values) =>
+            // If has a math value, append that
+            switch (List.nth(values, index).m) {
+            | None => List.nth(values, index).v
+            | Some(mathValue) =>
+              String.make(1, mathValue) ++ List.nth(values, index).v
+            }
           },
       })
 
