@@ -90,6 +90,12 @@ let getLastCharType = (string): lastCharacter =>
     };
   };
 
+let getValuesLength = values =>
+  switch (values) {
+  | None => 0
+  | Some(v) => List.length(v)
+  };
+
 /**
  * Process the input value to extract possible math symbol
  * and value
@@ -137,6 +143,7 @@ let make = _children => {
     // INPUT VALUE UPDATES:
     | UpdateInput(inputString) =>
       let lastCharType = getLastCharType(inputString);
+      let valuesLength = getValuesLength(state.values);
 
       ReasonReact.Update({
         ...state,
@@ -144,7 +151,16 @@ let make = _children => {
           switch (lastCharType) {
           | Empty => ""
           | Digit => inputString
-          | Math(mathChar) => String.make(1, mathChar)
+          | Math(mathChar) =>
+            // If active item, do not allow math on first item
+            // TODO: allow minus!!
+            switch (state.activeIndex) {
+            | Some(index)
+                when
+                  index == valuesLength - 1 && String.length(inputString) == 1 => ""
+            | Some(_)
+            | None => String.make(1, mathChar)
+            }
           },
         values:
           switch (lastCharType) {
