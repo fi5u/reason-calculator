@@ -28,6 +28,11 @@ type action =
   | UpdateInput(string)
   | UpdateValue(Input.inputValue);
 
+let mylist = ["a", "b", "d"];
+let newVar = "c";
+Js.log(List.concat([['x', 'y'], ['z']]));
+Js.log(List.concat([slice(mylist, 0, 2), [newVar], slice(mylist, 2, 3)]));
+
 /**
  * Calculate two values with a math symbol
  */
