@@ -1,3 +1,5 @@
+open Helpers;
+
 [%bs.raw {|require('./app.css')|}];
 
 [@bs.module] external logo: string = "./logo.svg";
@@ -193,16 +195,33 @@ let make = _children => {
         ...state,
         inputValue: "",
         values:
-          switch (state.values) {
-          | None => Some([{m: None, v: value}])
-          | Some(values) =>
-            Some([
-              {
-                m: Some(value.[0]),
-                v: String.sub(value, 1, String.length(value) - 1),
-              },
-              ...values,
-            ])
+          // If a value has been selected, replace the value
+          switch (state.activeIndex) {
+          | Some(index) =>
+            switch (state.values) {
+            | None => None // This case should be impossible
+            | Some(values) =>
+              Some(
+                List.concat([
+                  slice(values, 0, index),
+                  [processInput(value)],
+                  slice(values, index + 1, -1),
+                ]),
+              )
+            }
+          | None =>
+            // Otherwise update values with new value
+            switch (state.values) {
+            | None => Some([{m: None, v: value}])
+            | Some(values) =>
+              Some([
+                {
+                  m: Some(value.[0]),
+                  v: String.sub(value, 1, String.length(value) - 1),
+                },
+                ...values,
+              ])
+            }
           },
       })
     },
