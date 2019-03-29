@@ -28,11 +28,6 @@ type action =
   | UpdateInput(string)
   | UpdateValue(Input.inputValue);
 
-let mylist = ["a", "b", "d"];
-let newVar = "c";
-Js.log(List.concat([['x', 'y'], ['z']]));
-Js.log(List.concat([slice(mylist, 0, 2), [newVar], slice(mylist, 2, 3)]));
-
 /**
  * Calculate two values with a math symbol
  */
@@ -158,11 +153,14 @@ let make = _children => {
           | Digit => inputString
           | Math(mathChar) =>
             // If active item, do not allow math on first item
-            // TODO: allow minus!!
             switch (state.activeIndex) {
             | Some(index)
                 when
-                  index == valuesLength - 1 && String.length(inputString) == 1 => ""
+                  index == valuesLength
+                  - 1
+                  && String.length(inputString) == 1
+                  // Allow minus when first item
+                  && inputString.[0] != '-' => ""
             | Some(_)
             | None => String.make(1, mathChar)
             }
