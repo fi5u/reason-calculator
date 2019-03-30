@@ -150,7 +150,20 @@ let make = _children => {
         inputValue:
           switch (lastCharType) {
           | Empty => ""
-          | Digit => inputString
+          | Digit =>
+            // If active item, enforce math on all but first item
+            switch (state.activeIndex) {
+            // Allways output input string if no active index
+            | None => inputString
+            // Output inputString if is the first item in list
+            | Some(index) when index == valuesLength - 1 => inputString
+            // Output input string when selected item is not first and input string is longer than 1
+            | Some(index)
+                when
+                  index != valuesLength - 1 && String.length(inputString) > 1 => inputString
+            // Other cases, don't allow anything through
+            | Some(_) => ""
+            }
           | Math(mathChar) =>
             // If active item, do not allow math on first item
             switch (state.activeIndex) {
