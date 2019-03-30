@@ -224,7 +224,8 @@ let make = _children => {
     // ENTER PRESSED
     | UpdateValue(value) =>
       ReasonReact.Update({
-        ...state,
+        //...state,
+        activeIndex: None,
         inputValue: "",
         values:
           // If a value has been selected, replace the value
